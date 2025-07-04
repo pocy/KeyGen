@@ -7,6 +7,7 @@ import type {
   GeneratorSettings,
   PasswordType 
 } from '@/types';
+import type { Language } from '@/lib/i18n';
 
 interface AppState {
   // 当前生成的密码
@@ -32,6 +33,10 @@ interface AppState {
   // UI状态
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  
+  // 语言设置
+  language: Language;
+  setLanguage: (language: Language) => void;
   
   // 批量生成的密码
   batchPasswords: string[];
@@ -114,29 +119,26 @@ export const useAppStore = create<AppState>()(
       currentPassword: '',
       setCurrentPassword: (password) => set({ currentPassword: password }),
 
-      // 设置
+      // 生成器设置
       settings: defaultSettings,
       updateSettings: (newSettings) =>
         set((state) => ({
           settings: { ...state.settings, ...newSettings },
         })),
 
-      // 历史记录
+      // 密码历史
       history: [],
       addToHistory: (item) =>
-        set((state) => {
-          if (!state.settings.saveHistory) return state;
-          
-          const newHistory = [item, ...state.history.slice(0, 49)]; // 保留最近50条
-          return { history: newHistory };
-        }),
+        set((state) => ({
+          history: [item, ...state.history.slice(0, 99)], // 保留最近100条记录
+        })),
       clearHistory: () => set({ history: [] }),
       removeFromHistory: (id) =>
         set((state) => ({
           history: state.history.filter((item) => item.id !== id),
         })),
 
-      // 模板
+      // 密码模板
       templates: defaultTemplates,
       addTemplate: (template) =>
         set((state) => ({
@@ -146,51 +148,36 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           templates: state.templates.filter((template) => template.id !== id),
         })),
-      updateTemplate: (id, updates) =>
+      updateTemplate: (id, updatedTemplate) =>
         set((state) => ({
           templates: state.templates.map((template) =>
-            template.id === id ? { ...template, ...updates } : template
+            template.id === id ? { ...template, ...updatedTemplate } : template
           ),
         })),
 
       // UI状态
       isDarkMode: false,
       toggleDarkMode: () =>
-        set((state) => {
-          const newDarkMode = !state.isDarkMode;
-          // 更新DOM类名
-          if (typeof document !== 'undefined') {
-            if (newDarkMode) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-          }
-          return { isDarkMode: newDarkMode };
-        }),
+        set((state) => ({ isDarkMode: !state.isDarkMode })),
 
-      // 批量密码
+      // 语言设置
+      language: 'zh' as Language,
+      setLanguage: (language) => set({ language }),
+
+      // 批量生成
       batchPasswords: [],
       setBatchPasswords: (passwords) => set({ batchPasswords: passwords }),
       clearBatchPasswords: () => set({ batchPasswords: [] }),
     }),
     {
       name: 'keygen-storage',
-      storage: createJSONStorage(() => {
-        if (typeof window !== 'undefined') {
-          return localStorage;
-        }
-        return {
-          getItem: () => null,
-          setItem: () => {},
-          removeItem: () => {},
-        };
-      }),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         settings: state.settings,
         history: state.history,
         templates: state.templates,
         isDarkMode: state.isDarkMode,
+        language: state.language,
       }),
     }
   )

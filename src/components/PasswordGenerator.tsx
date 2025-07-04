@@ -5,15 +5,9 @@ import { Copy, RefreshCw, Settings, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { generatePassword, evaluatePasswordStrength } from '@/lib/passwordGenerator';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';
+import { Button } from '@/components/ui/button';
+import { getTranslation } from '@/lib/i18n';
 import type { PasswordType } from '@/types';
-
-const passwordTypes: { value: PasswordType; label: string; description: string }[] = [
-  { value: 'random', label: '随机密码', description: '包含字母、数字和符号的强密码' },
-  { value: 'memorable', label: '记忆密码', description: '基于单词的易记忆密码' },
-  { value: 'pin', label: 'PIN码', description: '纯数字密码' },
-  { value: 'passphrase', label: '密码短语', description: '多个单词组合的密码' },
-  { value: 'uuid', label: 'UUID', description: '唯一标识符格式' },
-];
 
 export default function PasswordGenerator() {
   const {
@@ -22,7 +16,38 @@ export default function PasswordGenerator() {
     settings,
     updateSettings,
     addToHistory,
+    language,
   } = useAppStore();
+
+  const t = getTranslation(language);
+
+  const passwordTypes: { value: PasswordType; label: string; description: string }[] = [
+    { 
+      value: 'random', 
+      label: t.passwordTypes.random.label, 
+      description: t.passwordTypes.random.description 
+    },
+    { 
+      value: 'memorable', 
+      label: t.passwordTypes.memorable.label, 
+      description: t.passwordTypes.memorable.description 
+    },
+    { 
+      value: 'pin', 
+      label: t.passwordTypes.pin.label, 
+      description: t.passwordTypes.pin.description 
+    },
+    { 
+      value: 'passphrase', 
+      label: t.passwordTypes.passphrase.label, 
+      description: t.passwordTypes.passphrase.description 
+    },
+    { 
+      value: 'uuid', 
+      label: t.passwordTypes.uuid.label, 
+      description: t.passwordTypes.uuid.description 
+    },
+  ];
 
   const [showPassword, setShowPassword] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -98,26 +123,29 @@ export default function PasswordGenerator() {
       {/* 密码类型选择 */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          密码类型
+          {t.passwordTypes.title}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {passwordTypes.map((type) => (
-            <button
+            <Button
               key={type.value}
               onClick={() => updateType(type.value)}
-              className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+              variant={settings.type === type.value ? "default" : "outline"}
+              className={`p-3 h-auto text-left justify-start ${
                 settings.type === type.value
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? ''
+                  : 'hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
-              <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                {type.label}
+              <div className="flex flex-col items-start">
+                <div className="font-medium text-sm">
+                  {type.label}
+                </div>
+                <div className="text-xs opacity-70 mt-1">
+                  {type.description}
+                </div>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                {type.description}
-              </div>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -126,17 +154,17 @@ export default function PasswordGenerator() {
       {settings.type === 'random' && (
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            密码选项
+            {t.passwordOptions.title}
           </h3>
           
           {/* 密码长度 */}
           <div className="space-y-3 mb-6">
             <div className="flex justify-between items-center">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                密码长度
+                {t.passwordOptions.length}
               </label>
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                {settings.options.length} 位
+                {settings.options.length} {t.passwordOptions.lengthUnit}
               </span>
             </div>
             <input
@@ -163,7 +191,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                大写字母 (A-Z)
+                {t.passwordOptions.uppercase}
               </span>
             </label>
 
@@ -175,7 +203,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                小写字母 (a-z)
+                {t.passwordOptions.lowercase}
               </span>
             </label>
 
@@ -187,7 +215,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                数字 (0-9)
+                {t.passwordOptions.numbers}
               </span>
             </label>
 
@@ -199,7 +227,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                特殊字符 (!@#$...)
+                {t.passwordOptions.symbols}
               </span>
             </label>
 
@@ -211,7 +239,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                排除易混淆字符
+                {t.passwordOptions.excludeSimilar}
               </span>
             </label>
 
@@ -223,7 +251,7 @@ export default function PasswordGenerator() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                排除模糊字符
+                {t.passwordOptions.excludeAmbiguous}
               </span>
             </label>
           </div>
@@ -234,28 +262,27 @@ export default function PasswordGenerator() {
       <div className="card">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            生成的密码
+            {t.generatedPassword.title}
           </h3>
           <div className="flex space-x-2">
-            <button
+            <Button
               onClick={() => setShowPassword(!showPassword)}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-              title={showPassword ? '隐藏密码' : '显示密码'}
+              variant="ghost"
+              size="icon"
+              title={showPassword ? t.generatedPassword.hidePassword : t.generatedPassword.showPassword}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={copyToClipboard}
               disabled={!currentPassword}
-              className={`p-2 transition-colors ${
-                copySuccess
-                  ? 'text-green-500'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              } disabled:opacity-50`}
-              title="复制密码"
+              variant="ghost"
+              size="icon"
+              className={copySuccess ? 'text-green-500' : ''}
+              title={t.generatedPassword.copyPassword}
             >
               <Copy size={18} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -266,24 +293,25 @@ export default function PasswordGenerator() {
               value={showPassword ? currentPassword : '•'.repeat(currentPassword.length)}
               readOnly
               className="w-full p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg font-mono text-lg text-gray-900 dark:text-gray-100 focus:outline-none"
-              placeholder="点击下方按钮生成密码"
+              placeholder={t.generatedPassword.placeholder}
             />
           </div>
 
-          <button
+          <Button
             onClick={generateNewPassword}
             disabled={isGenerating}
-            className={`w-full btn-primary flex items-center justify-center space-x-2 py-3 ${
+            size="lg"
+            className={`w-full ${
               isGenerating ? 'opacity-75 cursor-not-allowed' : ''
             }`}
           >
             <RefreshCw size={18} className={isGenerating ? 'animate-spin' : ''} />
-            <span>{isGenerating ? '生成中...' : '生成新密码'}</span>
-          </button>
+            <span>{isGenerating ? t.generatedPassword.generating : t.generatedPassword.generate}</span>
+          </Button>
 
           {copySuccess && (
             <div className="text-center text-sm text-green-600 dark:text-green-400">
-              密码已复制到剪贴板
+              {t.generatedPassword.copied}
             </div>
           )}
         </div>
